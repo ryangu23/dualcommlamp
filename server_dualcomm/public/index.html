@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>server push</title>
+  </head>
+  <body>
+    <h1 id="rgb">Current RGB: [255, 124, 115]</h1>
+    <input id="clr" type="color">
+    <script>
+
+      const init_ = () => {
+        fetch("https://dualcomsv.ryangu23.repl.co/retinfo", {
+        headers:{
+          "Content-Type":"application/json"
+        },
+        method: "GET"
+        }).then(res => res.json()).then(data => {
+          console.log(data);
+          
+          document.getElementById("rgb").innerHTML = "current rgb [" + data + "]";
+          document.body.style.backgroundColor = `rgb(${data})`;
+          }
+        )
+      };
+
+      init_();
+
+      const pushColor = (color_) => {
+        
+        for (let i=0;i<color_.length;i++) {
+          if (isNaN(color_[i])) {color_[i] = 0};
+          color_[i] = parseInt(color_[i]);
+          
+          if (color_[i] < 0 || color_[i] > 255 || color_[i] == null) {
+            color_[i] = 0;
+          }
+        }
+
+        fetch("https://dualcomsv.ryangu23.repl.co/update", {
+          headers:{
+            "Content-Type":"application/json"
+          },
+          method: "POST",
+          body: JSON.stringify(color_)
+        }).then(res => res.json()).then(data => {
+          console.log(data);
+          document.getElementById("rgb").innerHTML = "current rgb [" + data + "]";
+          document.body.style.backgroundColor = `rgb(${data})`;
+        });
+      }
+
+      const hextorgb = (hex) => {
+        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        } : null;
+      }
+
+      let clr = document.getElementById("clr");
+
+      clr.addEventListener("change", (e) => {
+        let rgbcolor = hextorgb(e.target.value);
+        let inputcolor = [rgbcolor.r, rgbcolor.g, rgbcolor.b]
+        //console.log(inputcolor);
+        pushColor(inputcolor);
+      })
+    </script>
+
+    <!---
+    <input id="r">
+    <input id="g">
+    <input id="b">
+    <button onclick="pushColor([document.getElementById('r').value, document.getElementById('g').value, document.getElementById('b').value])">submit rgb</button>
+    --->
+  </body>
+</html>
